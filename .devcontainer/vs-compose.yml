@@ -1,0 +1,47 @@
+version: "3.7"
+
+volumes:
+  node_modules:
+  vscode_extensions:
+  vscode_insiders_extensions:
+
+services:
+  lib:
+    image: icalia-actions/register-aws-ecs-task-definition:development
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+      args:
+        APP_PATH: ${PWD}
+        DEVELOPER_UID: ${UID:-1000}
+        DEVELOPER_USERNAME: ${USER:-you}
+    working_dir: ${PWD}
+    entrypoint: ${PWD}/bin/dev-entrypoint
+    volumes:
+      - .:${PWD}
+      - node_modules:${PWD}/node_modules
+      - vscode_extensions:/home/${USER:-you}/.vscode-server/extensions
+      - vscode_insiders_extensions:/home/${USER:-you}/.vscode-server-insiders/extensions
+    
+    # Keep the stdin open, so we can attach to our app container's process
+    # and do things such as byebug, etc:
+    stdin_open: true
+
+    # Enable sending signals (CTRL+C, CTRL+P + CTRL+Q) into the container:
+    tty: true
+
+    # The command we want to execute by default when running the container
+    # [Optional] Required for ptrace-based debuggers like C++, Go, and Rust
+    cap_add:
+      - SYS_PTRACE
+      - NET_ADMIN
+    security_opt:
+      - seccomp:unconfined
+
+    command: vscode-wait # Éste comando está definido en `bin/dev-entrypoint`
+
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      GIT_EDITOR: code

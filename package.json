@@ -1,0 +1,55 @@
+{
+  "name": "@icalialabs/register-aws-ecs-task-definition",
+  "version": "0.0.2",
+  "description": "Registers a Task Definition in AWS ECS",
+  "main": "lib/main.js",
+  "scripts": {
+    "debug": "ts-node -r dotenv/config src/main.ts",
+    "build": "tsc && ncc build",
+    "format": "prettier --write **/*.ts",
+    "format-check": "prettier --check **/*.ts",
+    "test": "jest --coverage",
+    "pre-checkin": "yarn run format && yarn run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/icalia-actions/register-aws-ecs-task-definition.git"
+  },
+  "keywords": [
+    "actions",
+    "icalia",
+    "aws",
+    "ecs",
+    "build",
+    "push"
+  ],
+  "author": "Icalia Labs",
+  "contributors": [
+    {
+      "name": "Vov",
+      "url": "https://ical.ink/vov"
+    }
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@actions/core": "^1.2.6",
+    "@actions/exec": "^1.0.4",
+    "@actions/github": "^4.0.0",
+    "@types/jest": "^26.0.22",
+    "@types/node": "^14.14.37",
+    "@types/tmp": "^0.2.0",
+    "@vercel/ncc": "^0.27.0",
+    "dotenv": "^8.2.0",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.3",
+    "yaml": "^1.10.2",
+    "jest": "^26.6.3",
+    "jest-runtime": "^26.6.3",
+    "prettier": "^2.2.1",
+    "ts-jest": "^26.5.4",
+    "typescript-formatter": "^7.2.2"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.875.0"
+  }
+}

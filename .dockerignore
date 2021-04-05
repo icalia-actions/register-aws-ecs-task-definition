@@ -1,0 +1,25 @@
+# Ignore all Docker files:
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Ignore Git files & config:
+.git
+.gitattributes
+.gitconfig
+.gitignore
+
+# Ignorar NodeJS deps:
+node_modules
+yarn-error.log
+
+# Ignore Github config:
+.github/
+
+# Ignore Visual Studio Code & Dev Containers config:
+.devcontainer
+.vscode
+
+# Ignore documentation
+README.md
+doc/
