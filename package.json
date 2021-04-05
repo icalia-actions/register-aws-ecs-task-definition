@@ -1,8 +1,9 @@
 {
   "name": "@icalialabs/register-aws-ecs-task-definition",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Registers a Task Definition in AWS ECS",
   "main": "lib/main.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "debug": "ts-node -r dotenv/config src/main.ts",
     "build": "tsc && ncc build",
