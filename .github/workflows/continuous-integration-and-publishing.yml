@@ -273,6 +273,9 @@ jobs:
         with:
           name: lib-folder
 
+      - name: Remove temporary folder
+        run: rm -rf tmp
+
       - name: Publish Package
         uses: ./.github/actions/run-ci-compose
         env:
