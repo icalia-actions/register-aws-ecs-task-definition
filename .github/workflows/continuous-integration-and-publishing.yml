@@ -58,6 +58,8 @@ jobs:
             icalia-actions/register-aws-ecs-task-definition:testing-latest
           build-args: |
             APP_PATH=${{env.PWD}}
+            DEVELOPER_UID=${{env.UID}}
+            DEVELOPER_USERNAME=${{env.USER}}
           cache-from: type=local,src=/tmp/.buildx-cache
           # cache-to: type=local,dest=/tmp/.buildx-cache # Temporary fix...
           cache-to: type=local,dest=/tmp/.buildx-cache-new
@@ -114,6 +116,8 @@ jobs:
             icalia-actions/register-aws-ecs-task-definition:testing-latest
           build-args: |
             APP_PATH=${{env.PWD}}
+            DEVELOPER_UID=${{env.UID}}
+            DEVELOPER_USERNAME=${{env.USER}}
           cache-from: type=local,src=/tmp/.buildx-cache
           # cache-to: type=local,dest=/tmp/.buildx-cache # Temporary fix...
           cache-to: type=local,dest=/tmp/.buildx-cache-new
@@ -142,14 +146,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v1
       
-      - name: Check UIDs
-        run: |
-          whoami
-          id
-          ls -lah .
-          echo "UID: ${UID}"
-          echo "USER: ${USER}"
-
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
@@ -183,6 +179,8 @@ jobs:
             icalia-actions/register-aws-ecs-task-definition:testing-latest
           build-args: |
             APP_PATH=${{env.PWD}}
+            DEVELOPER_UID=${{env.UID}}
+            DEVELOPER_USERNAME=${{env.USER}}
           cache-from: type=local,src=/tmp/.buildx-cache
           # cache-to: type=local,dest=/tmp/.buildx-cache # Temporary fix...
           cache-to: type=local,dest=/tmp/.buildx-cache-new
@@ -253,6 +251,8 @@ jobs:
             icalia-actions/register-aws-ecs-task-definition:testing-latest
           build-args: |
             APP_PATH=${{env.PWD}}
+            DEVELOPER_UID=${{env.UID}}
+            DEVELOPER_USERNAME=${{env.USER}}
           cache-from: type=local,src=/tmp/.buildx-cache
           # cache-to: type=local,dest=/tmp/.buildx-cache # Temporary fix...
           cache-to: type=local,dest=/tmp/.buildx-cache-new
