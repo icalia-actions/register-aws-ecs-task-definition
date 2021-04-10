@@ -155,9 +155,8 @@ jobs:
           context: .
           file: ./Dockerfile
           target: release
-
+          load: true
           platforms: linux/amd64
-
           tags: |
             icalia-actions/register-aws-ecs-task-definition:${{ github.sha }}
             icalia-actions/register-aws-ecs-task-definition:latest
@@ -179,6 +178,11 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Check if dist is up to date
+        run: |
+          docker run --rm icalia-actions/register-aws-ecs-task-definition:latest cat dist/index.js > dist/index.js
+          git diff --quiet --exit-code || echo "::error ::dist/index.js is not up to date - perform a build and commit"
 
   publish_package:
     name: Publish Package
