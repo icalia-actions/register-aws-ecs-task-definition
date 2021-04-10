@@ -121,7 +121,7 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
 
       - name: Run Tests
-        uses: icalia-actions/run-ci-compose@v0.0.1
+        uses: icalia-actions/run-ci-compose@v0.0.2
         with:
           service-name: tests
 
@@ -231,7 +231,7 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
 
       - name: Publish Package
-        uses: icalia-actions/run-ci-compose@v0.0.1
+        uses: icalia-actions/run-ci-compose@v0.0.2
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         with:
