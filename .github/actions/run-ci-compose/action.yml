@@ -1,0 +1,14 @@
+name: Runs a special configuration of Docker Compose
+description: Runs Docker Compose using an additional config file called 'ci-compose.yml'
+
+inputs:
+  service-name:
+    description: The name of the service to run with docker-compose
+    required: true
+  command:
+    description: The command used to run the selected service
+    required: false
+
+runs:
+  using: node12
+  main: index.js

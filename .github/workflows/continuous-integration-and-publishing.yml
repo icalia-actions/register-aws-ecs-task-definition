@@ -1,0 +1,233 @@
+name: Continuous Integration & Publishing
+
+on:
+  # Trigger the workflow on push or pull request,
+  # but only for the main branch
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  release:
+    types:
+      - published
+
+env:
+  # Configures docker-compose to use Docker CLI to build the image:
+  COMPOSE_DOCKER_CLI_BUILD: 1
+  # Configures Docker CLI to use BuildKit to build the image:
+  DOCKER_BUILDKIT: 1
+  # The workspace directory used by ci-compose:
+  PWD: ${{ github.workspace }}
+
+jobs:
+  test_build:
+    name: Build Testing Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v1
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: buildx-cache-${{ github.head_ref || github.ref }}-${{ github.sha }}
+          restore-keys: |
+            buildx-cache-${{ github.head_ref || github.ref }}-
+            buildx-cache-main-
+            buildx-cache-
+      
+      - name: Build Test Image
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.output.name }}
+          context: .
+          file: Dockerfile
+          target: testing
+
+          platforms: linux/amd64
+
+          tags: |
+            icalia-actions/register-aws-ecs-task-definition:testing-${{ github.sha }}
+            icalia-actions/register-aws-ecs-task-definition:testing-latest
+          build-args: |
+            APP_PATH=${{env.PWD}}
+            DEVELOPER_UID=${{env.UID}}
+            DEVELOPER_USERNAME=${{env.USER}}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          # cache-to: type=local,dest=/tmp/.buildx-cache # Temporary fix...
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+
+      - # Temporary fix
+        # https://github.com/docker/build-push-action/issues/252
+        # https://github.com/moby/buildkit/issues/1896
+        #
+        # There is a new cache backend using GitHub cache being developed that
+        # will lighten your workflow. More info: https://github.com/docker/buildx/pull/535
+        name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  testing:
+    name: Testing
+    runs-on: ubuntu-latest
+    needs: [test_build]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v1
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: buildx-cache-${{ github.head_ref || github.ref }}-${{ github.sha }}
+          restore-keys: |
+            buildx-cache-${{ github.head_ref || github.ref }}-
+            buildx-cache-main-
+            buildx-cache-
+
+      - name: Load Testing Image
+        id: load_test_image
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile
+          target: testing
+
+          # Make the build result to be available in the Docker client:
+          load: true
+
+          platforms: linux/amd64
+
+          tags: |
+            icalia-actions/register-aws-ecs-task-definition:testing-${{ github.sha }}
+            icalia-actions/register-aws-ecs-task-definition:testing-latest
+          build-args: |
+            APP_PATH=${{env.PWD}}
+            DEVELOPER_UID=${{env.UID}}
+            DEVELOPER_USERNAME=${{env.USER}}
+          cache-from: type=local,src=/tmp/.buildx-cache
+
+      - name: Run Tests
+        uses: ./.github/actions/run-ci-compose
+        with:
+          service-name: tests
+
+  release_build:
+    name: Build Release
+    runs-on: ubuntu-latest
+    needs: [test_build]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v1
+      
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: buildx-cache-${{ github.head_ref || github.ref }}-${{ github.sha }}
+          restore-keys: |
+            buildx-cache-${{ github.head_ref || github.ref }}-
+            buildx-cache-main-
+            buildx-cache-
+
+      - name: Build Releaseable Image
+        id: build_releaseable_image
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile
+          target: release
+
+          platforms: linux/amd64
+
+          tags: |
+            icalia-actions/register-aws-ecs-task-definition:${{ github.sha }}
+            icalia-actions/register-aws-ecs-task-definition:latest
+          build-args: |
+            APP_PATH=${{env.PWD}}
+            DEVELOPER_UID=${{env.UID}}
+            DEVELOPER_USERNAME=${{env.USER}}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          # cache-to: type=local,dest=/tmp/.buildx-cache # Temporary fix...
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+
+      - # Temporary fix
+        # https://github.com/docker/build-push-action/issues/252
+        # https://github.com/moby/buildkit/issues/1896
+        #
+        # There is a new cache backend using GitHub cache being developed that
+        # will lighten your workflow. More info: https://github.com/docker/buildx/pull/535
+        name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  publish_package:
+    name: Publish Package
+    runs-on: ubuntu-latest
+    needs: [testing, release_build]
+    if: github.event_name == 'release'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v1
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: buildx-cache-${{ github.head_ref || github.ref }}-${{ github.sha }}
+          restore-keys: |
+            buildx-cache-${{ github.head_ref || github.ref }}-
+            buildx-cache-main-
+            buildx-cache-
+
+      - name: Load Releaseable Image
+        id: load_releaseable_image
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile
+          target: release
+
+          load: true
+
+          platforms: linux/amd64
+
+          tags: |
+            icalia-actions/register-aws-ecs-task-definition:${{ github.sha }}
+            icalia-actions/register-aws-ecs-task-definition:latest
+          build-args: |
+            APP_PATH=${{env.PWD}}
+            DEVELOPER_UID=${{env.UID}}
+            DEVELOPER_USERNAME=${{env.USER}}
+          cache-from: type=local,src=/tmp/.buildx-cache
+
+      - name: Publish Package
+        uses: ./.github/actions/run-ci-compose
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        with:
+          service-name: publisher

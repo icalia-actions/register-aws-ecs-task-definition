@@ -1,3 +1,4 @@
+# Stage I: Runtime  ============================================================
 FROM node:erbium-buster-slim AS runtime
 
 RUN echo 'APT::Acquire::Retries "3";' > /etc/apt/apt.conf.d/80-retries \
@@ -7,6 +8,7 @@ RUN echo 'APT::Acquire::Retries "3";' > /etc/apt/apt.conf.d/80-retries \
     curl \
  && rm -rf /var/lib/apt/lists/*
 
+# Stage II: Testing  ===========================================================
 FROM runtime AS testing
 
 RUN apt-get update \
@@ -14,11 +16,20 @@ RUN apt-get update \
    git
 
 # Receive the APP_PATH argument:
-ARG APP_PATH=/icalia-actions/deploy-aws-ecs-service
+ARG APP_PATH=/icalia-actions/register-aws-ecs-task-definition
+
+# Receive the developer user's UID and USER:
+ARG DEVELOPER_UID=1000
+ARG DEVELOPER_USERNAME=you
+
+# Replicate the developer user in the development image:
+RUN id ${DEVELOPER_UID} \
+ || useradd -r -m -u ${DEVELOPER_UID} \
+    --shell /bin/bash -c "Developer User,,," ${DEVELOPER_USERNAME}
 
 # Ensure the developer user's home directory and APP_PATH are owned by him/her:
 # (A workaround to a side effect of setting WORKDIR before creating the user)
-RUN mkdir -p ${APP_PATH} && chown -R node:node ${APP_PATH}
+RUN mkdir -p ${APP_PATH} && chown -R ${DEVELOPER_UID}:node ${APP_PATH}
 
 # Add the project's executable path to the system PATH:
 ENV PATH=${APP_PATH}/bin:$PATH
@@ -27,14 +38,21 @@ ENV PATH=${APP_PATH}/bin:$PATH
 WORKDIR ${APP_PATH}
 
 # Switch to the developer user:
-USER node
+USER ${DEVELOPER_UID}
 
 # Copy and install the project dependency lists into the container image:
 COPY package.json yarn.lock ${APP_PATH}/
 RUN yarn install
 ENV PATH=${APP_PATH}/node_modules/.bin:$PATH
 
+# Stage III: Development =======================================================
 FROM testing AS development
+
+# Receive the APP_PATH argument:
+ARG APP_PATH=/icalia-actions/register-aws-ecs-task-definition
+
+# Receive the developer user's UID and USER:
+ARG DEVELOPER_UID=1000
 
 # Switch to "root" user to install system dependencies such as sudo:
 USER root
@@ -64,7 +82,9 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.1.32.zip" -o "a
  && ./aws/install
 
 # Add the developer user to the sudoers list:
-RUN echo "node ALL=(ALL) NOPASSWD:ALL" | tee "/etc/sudoers.d/node"
+RUN export USERNAME=$(getent passwd ${DEVELOPER_UID} | cut -d: -f1) \
+ && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" \
+  | tee "/etc/sudoers.d/${USERNAME}"
 
 # Persist bash history between runs
 # - See https://code.visualstudio.com/docs/remote/containers-advanced#_persist-bash-history-between-runs
@@ -75,8 +95,25 @@ RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/command-hist
     && echo $SNIPPET >> "/home/node/.bashrc"
 
 # Switch to the developer user:
-USER node
+USER ${DEVELOPER_UID}
 
 # Create the directories used to save Visual Studio Code extensions inside the
 # dev container:
 RUN mkdir -p ~/.vscode-server/extensions ~/.vscode-server-insiders/extensions
+
+# Stage IV: Builder ============================================================
+FROM testing AS builder
+
+ARG APP_PATH=/icalia-actions/register-aws-ecs-task-definition
+ARG DEVELOPER_UID=1000
+
+COPY --chown=${DEVELOPER_UID} . ${APP_PATH}/
+RUN yarn build
+
+RUN rm -rf .env .npmignore __test__ action.yml bin ci-compose.yml coverage src tsconfig.json yarn.lock tmp
+
+# Stage V: Release =============================================================
+FROM runtime AS release
+ARG APP_PATH=/icalia-actions/register-aws-ecs-task-definition
+COPY --from=builder --chown=node:node ${APP_PATH} /icalia-actions/register-aws-ecs-task-definition
+WORKDIR /icalia-actions/register-aws-ecs-task-definition
