@@ -4,6 +4,8 @@ import {
   TaskRegistrationInput,
 } from "./task-definition-registration";
 
+export * from "./task-definition-registration";
+
 async function run(): Promise<number> {
   const taskRegistrationInput = {
     family: getInput("family"),
