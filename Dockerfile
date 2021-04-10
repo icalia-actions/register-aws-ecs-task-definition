@@ -110,7 +110,7 @@ ARG DEVELOPER_UID=1000
 COPY --chown=${DEVELOPER_UID} . ${APP_PATH}/
 RUN yarn build
 
-RUN rm -rf .env .npmignore __test__ action.yml bin ci-compose.yml coverage dist node_modules src tsconfig.json yarn.lock tmp
+RUN rm -rf .env .npmignore __test__ action.yml bin ci-compose.yml coverage src tsconfig.json yarn.lock tmp
 
 # Stage V: Release =============================================================
 FROM runtime AS release
