@@ -8,7 +8,7 @@ volumes:
 services:
   tests: &lib
     image: icalia-actions/register-aws-ecs-task-definition:testing-latest
-    build:
+    build: &lib_build
       target: testing
       context: .
       args:
@@ -20,12 +20,12 @@ services:
       - .:${PWD:-/register-aws-ecs-task-definition}
       - node_modules:${PWD}/node_modules
 
-  builder:
-    <<: *lib
-    command: yarn build
-
   publisher:
     <<: *lib
+    image: icalia-actions/register-aws-ecs-task-definition:latest
+    build:
+      <<: *lib_build
+      target: release
     command: yarn publish --non-interactive
     environment:
       NPM_AUTH_TOKEN: ${NPM_AUTH_TOKEN}

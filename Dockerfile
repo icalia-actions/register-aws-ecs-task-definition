@@ -1,3 +1,4 @@
+# Stage I: Runtime  ============================================================
 FROM node:erbium-buster-slim AS runtime
 
 RUN echo 'APT::Acquire::Retries "3";' > /etc/apt/apt.conf.d/80-retries \
@@ -7,6 +8,7 @@ RUN echo 'APT::Acquire::Retries "3";' > /etc/apt/apt.conf.d/80-retries \
     curl \
  && rm -rf /var/lib/apt/lists/*
 
+# Stage II: Testing  ===========================================================
 FROM runtime AS testing
 
 RUN apt-get update \
@@ -43,6 +45,7 @@ COPY package.json yarn.lock ${APP_PATH}/
 RUN yarn install
 ENV PATH=${APP_PATH}/node_modules/.bin:$PATH
 
+# Stage III: Development =======================================================
 FROM testing AS development
 
 # Receive the APP_PATH argument:
@@ -97,3 +100,20 @@ USER ${DEVELOPER_UID}
 # Create the directories used to save Visual Studio Code extensions inside the
 # dev container:
 RUN mkdir -p ~/.vscode-server/extensions ~/.vscode-server-insiders/extensions
+
+# Stage IV: Builder ============================================================
+FROM testing AS builder
+
+ARG APP_PATH=/icalia-actions/register-aws-ecs-task-definition
+ARG DEVELOPER_UID=1000
+
+COPY --chown=${DEVELOPER_UID} . ${APP_PATH}/
+RUN yarn build
+
+RUN rm -rf .env .npmignore __test__ action.yml bin ci-compose.yml coverage dist node_modules src tsconfig.json yarn.lock tmp
+
+# Stage V: Release =============================================================
+FROM runtime AS release
+ARG APP_PATH=/icalia-actions/register-aws-ecs-task-definition
+COPY --from=builder --chown=node:node ${APP_PATH} /icalia-actions/register-aws-ecs-task-definition
+WORKDIR /icalia-actions/register-aws-ecs-task-definition
