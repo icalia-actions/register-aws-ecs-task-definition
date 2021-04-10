@@ -7,7 +7,6 @@ import {
 export * from "./task-definition-registration";
 
 async function run(): Promise<number> {
-  console.log('dummy')
   const taskRegistrationInput = {
     family: getInput("family"),
     templatePath: getInput("template-path"),
