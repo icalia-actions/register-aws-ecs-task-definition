@@ -277,6 +277,11 @@ jobs:
       - name: Remove temporary folder
         run: rm -rf tmp
 
+      - name: Check folders & contents
+        run:
+          ls -lah
+          ls -lah lib
+
       - name: Publish Package
         uses: ./.github/actions/run-ci-compose
         env:
