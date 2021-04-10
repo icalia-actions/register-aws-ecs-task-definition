@@ -14,7 +14,7 @@ RUN apt-get update \
    git
 
 # Receive the APP_PATH argument:
-ARG APP_PATH=/icalia-actions/deploy-aws-ecs-service
+ARG APP_PATH=/icalia-actions/register-aws-ecs-task-definition
 
 # Ensure the developer user's home directory and APP_PATH are owned by him/her:
 # (A workaround to a side effect of setting WORKDIR before creating the user)
