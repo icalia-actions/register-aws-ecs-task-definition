@@ -16,6 +16,10 @@ RUN apt-get update \
 # Receive the APP_PATH argument:
 ARG APP_PATH=/icalia-actions/register-aws-ecs-task-definition
 
+# Receive the developer user's UID and USER:
+ARG DEVELOPER_UID=1000
+ARG DEVELOPER_USERNAME=you
+
 # Ensure the developer user's home directory and APP_PATH are owned by him/her:
 # (A workaround to a side effect of setting WORKDIR before creating the user)
 RUN mkdir -p ${APP_PATH} && chown -R node:node ${APP_PATH}

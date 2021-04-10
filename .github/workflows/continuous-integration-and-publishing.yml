@@ -141,6 +141,14 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v1
+      
+      - name: Check UIDs
+        run: |
+          whoami
+          id
+          ls -lah .
+          echo "UID: ${UID}"
+          echo "USER: ${USER}"
 
       - name: Set up Docker Buildx
         id: buildx
