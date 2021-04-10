@@ -277,6 +277,11 @@ jobs:
       - name: Remove temporary folder
         run: rm -rf tmp
 
+      - name: Check Config
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: docker-compose -f docker-compose.yml -f ci-compose.yml config
+
       - name: Publish Package
         uses: ./.github/actions/run-ci-compose
         env:
