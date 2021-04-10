@@ -18,6 +18,8 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
   # Configures Docker CLI to use BuildKit to build the image:
   DOCKER_BUILDKIT: 1
+  # The workspace directory used by ci-compose:
+  PWD: ${{ github.workspace }}
 
 jobs:
   test_build:
@@ -54,6 +56,8 @@ jobs:
           tags: |
             icalia-actions/register-aws-ecs-task-definition:testing-${{ github.sha }}
             icalia-actions/register-aws-ecs-task-definition:testing-latest
+          build-args: |
+            APP_PATH=${{env.PWD}}
           cache-from: type=local,src=/tmp/.buildx-cache
           # cache-to: type=local,dest=/tmp/.buildx-cache # Temporary fix...
           cache-to: type=local,dest=/tmp/.buildx-cache-new
@@ -104,9 +108,12 @@ jobs:
           load: true
 
           platforms: linux/amd64
+
           tags: |
             icalia-actions/register-aws-ecs-task-definition:testing-${{ github.sha }}
             icalia-actions/register-aws-ecs-task-definition:testing-latest
+          build-args: |
+            APP_PATH=${{env.PWD}}
           cache-from: type=local,src=/tmp/.buildx-cache
           # cache-to: type=local,dest=/tmp/.buildx-cache # Temporary fix...
           cache-to: type=local,dest=/tmp/.buildx-cache-new
@@ -162,9 +169,12 @@ jobs:
           load: true
 
           platforms: linux/amd64
+
           tags: |
             icalia-actions/register-aws-ecs-task-definition:testing-${{ github.sha }}
             icalia-actions/register-aws-ecs-task-definition:testing-latest
+          build-args: |
+            APP_PATH=${{env.PWD}}
           cache-from: type=local,src=/tmp/.buildx-cache
           # cache-to: type=local,dest=/tmp/.buildx-cache # Temporary fix...
           cache-to: type=local,dest=/tmp/.buildx-cache-new
@@ -229,9 +239,12 @@ jobs:
           load: true
 
           platforms: linux/amd64
+
           tags: |
             icalia-actions/register-aws-ecs-task-definition:testing-${{ github.sha }}
             icalia-actions/register-aws-ecs-task-definition:testing-latest
+          build-args: |
+            APP_PATH=${{env.PWD}}
           cache-from: type=local,src=/tmp/.buildx-cache
           # cache-to: type=local,dest=/tmp/.buildx-cache # Temporary fix...
           cache-to: type=local,dest=/tmp/.buildx-cache-new
