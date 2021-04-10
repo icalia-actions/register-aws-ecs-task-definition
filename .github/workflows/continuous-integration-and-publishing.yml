@@ -203,6 +203,7 @@ jobs:
 
       # Persist the built library
       - name: Persist lib folder
+        # if: github.event_name == 'release'
         uses: actions/upload-artifact@v2
         with:
           name: lib-folder
@@ -213,7 +214,7 @@ jobs:
     name: Publish Package
     runs-on: ubuntu-latest
     needs: [testing, release_build]
-    if: github.event_name == 'release'
+    # if: github.event_name == 'release'
     steps:
       - name: Checkout Code
         uses: actions/checkout@v1
