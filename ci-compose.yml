@@ -13,6 +13,8 @@ services:
       context: .
       args:
         APP_PATH: ${PWD}
+        DEVELOPER_UID: ${UID:-1000}
+        DEVELOPER_USERNAME: ${USER:-you}
     command: yarn test
     volumes:
       - .:${PWD:-/register-aws-ecs-task-definition}
@@ -26,4 +28,4 @@ services:
     <<: *lib
     command: yarn publish --non-interactive
     environment:
-      NPM_TOKEN: ${NPM_TOKEN}
+      NPM_AUTH_TOKEN: ${NPM_AUTH_TOKEN}
