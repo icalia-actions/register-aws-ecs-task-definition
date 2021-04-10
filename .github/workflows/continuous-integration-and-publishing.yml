@@ -183,6 +183,7 @@ jobs:
         run: |
           docker run --rm icalia-actions/register-aws-ecs-task-definition:latest cat dist/index.js > dist/index.js
           git diff --quiet --exit-code || echo "::error ::dist/index.js is not up to date - perform a build and commit"
+          git diff --quiet --exit-code
 
   publish_package:
     name: Publish Package
