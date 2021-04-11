@@ -9,7 +9,7 @@ inputs:
   family:
     description: The family is used as a name for your task definition. Up to 255 letters (uppercase and lowercase), numbers, and hyphens are allowed.
     required: true
-  template-path:
+  template:
     description: The path to the AWS ECS Task Definition template to use
     required: false
   container-images:

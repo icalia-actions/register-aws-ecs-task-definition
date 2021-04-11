@@ -8,7 +8,7 @@ import ECS, {
 
 export interface TaskRegistrationInput {
   family?: string;
-  templatePath?: string;
+  template?: string;
   containerImages?: object;
   environmentVars?: object;
 }
@@ -28,10 +28,10 @@ function getClient(): ECS {
 function readTaskDefinitionTemplate(
   input: TaskRegistrationInput
 ): RegisterTaskDefinitionRequest | undefined {
-  const { templatePath } = input;
-  if (!templatePath || !fs.existsSync(templatePath)) return;
+  const { template } = input;
+  if (!template || !fs.existsSync(template)) return;
 
-  const templateContents = fs.readFileSync(templatePath, "utf8");
+  const templateContents = fs.readFileSync(template, "utf8");
   return parse(templateContents);
 }
 
