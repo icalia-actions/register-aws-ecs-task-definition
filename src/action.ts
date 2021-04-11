@@ -1,21 +1,19 @@
-import { info, getInput, setOutput, setFailed } from "@actions/core";
+import { info, getInput, setOutput } from "@actions/core";
 import {
   registerTaskDefinition,
   TaskRegistrationInput,
 } from "./task-definition-registration";
 
 export async function run(): Promise<number> {
-  const taskRegistrationInput = {
-    family: getInput("family"),
-    templatePath: getInput("template-path"),
+  const family = getInput("family");
+
+  info(`Registering task definition '${family}'...`);
+  const { taskDefinitionArn } = await registerTaskDefinition({
+    family,
+    template: getInput("template"),
     containerImages: JSON.parse(getInput("container-images") || "null"),
     environmentVars: JSON.parse(getInput("environment-vars") || "null"),
-  } as TaskRegistrationInput;
-
-  info(`Registering task definition '${taskRegistrationInput.family}'...`);
-  const { taskDefinitionArn } = await registerTaskDefinition(
-    taskRegistrationInput
-  );
+  } as TaskRegistrationInput);
   if (!taskDefinitionArn) throw new Error("Task definition failed to register");
 
   info("Task Definition Registration Details:");

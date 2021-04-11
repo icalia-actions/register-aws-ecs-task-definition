@@ -9,7 +9,7 @@ Registers a Task Definition in AWS ECS
         uses: icalia-actions/register-aws-ecs-task-definition@v0.0.1
         with:
           family: my-task-definition-family
-          template-path: templates/ecs/my-task-definition.yml
+          template: templates/ecs/my-task-definition.yml
 
           # You can override the image used on any container - the most common
           # use case is to deploy an image built & pushed on a previous step:

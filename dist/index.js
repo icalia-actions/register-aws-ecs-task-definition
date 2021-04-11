@@ -22,14 +22,14 @@ const core_1 = __nccwpck_require__(2186);
 const task_definition_registration_1 = __nccwpck_require__(154);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        const taskRegistrationInput = {
-            family: core_1.getInput("family"),
-            templatePath: core_1.getInput("template-path"),
+        const family = core_1.getInput("family");
+        core_1.info(`Registering task definition '${family}'...`);
+        const { taskDefinitionArn } = yield task_definition_registration_1.registerTaskDefinition({
+            family,
+            template: core_1.getInput("template"),
             containerImages: JSON.parse(core_1.getInput("container-images") || "null"),
             environmentVars: JSON.parse(core_1.getInput("environment-vars") || "null"),
-        };
-        core_1.info(`Registering task definition '${taskRegistrationInput.family}'...`);
-        const { taskDefinitionArn } = yield task_definition_registration_1.registerTaskDefinition(taskRegistrationInput);
+        });
         if (!taskDefinitionArn)
             throw new Error("Task definition failed to register");
         core_1.info("Task Definition Registration Details:");
@@ -114,10 +114,10 @@ function getClient() {
     });
 }
 function readTaskDefinitionTemplate(input) {
-    const { templatePath } = input;
-    if (!templatePath || !fs.existsSync(templatePath))
+    const { template } = input;
+    if (!template || !fs.existsSync(template))
         return;
-    const templateContents = fs.readFileSync(templatePath, "utf8");
+    const templateContents = fs.readFileSync(template, "utf8");
     return yaml_1.parse(templateContents);
 }
 function overrideContainerImages(definition, containerImages) {
