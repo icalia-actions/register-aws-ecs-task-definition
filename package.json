@@ -1,6 +1,6 @@
 {
   "name": "@icalialabs/register-aws-ecs-task-definition",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Registers a Task Definition in AWS ECS",
   "main": "lib/main.js",
   "types": "lib/main.d.ts",
