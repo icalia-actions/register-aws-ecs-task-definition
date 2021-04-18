@@ -1,5 +1,6 @@
 name: Register AWS ECS Task Definition
 description: Registers a Task Definition in AWS ECS
+author: Icalia Labs
 
 branding:
   icon: activity
