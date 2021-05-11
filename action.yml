@@ -19,6 +19,9 @@ inputs:
   environment-vars:
     description: A JSON map of environment variables that will be replaced in the template (on all containers)
     required: false
+  secrets:
+    description: A JSON map of secrets variables that will be replaced in the template (on all containers)
+    required: false
 
 outputs:
   task-definition-arn:
