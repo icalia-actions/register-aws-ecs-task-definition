@@ -19,6 +19,12 @@ Registers a Task Definition in AWS ECS
           # container definitions, given that the overridden environment variable
           # already exists in the container definition:
           environment-vars: '{"FOO":"BAR"}'
+
+          # You can also override secrets already defined in the "secrets" key
+          # inside the container definition by using a map consisting of the
+          # "name" as key, and the "valueFrom" as the value - the secret name
+          # *must* be present in the definition, otherwise it will be ignored.
+          secrets: '{"MY_SECRET":"some-secret-name"}'
 ```
 
 ## Library Usage
