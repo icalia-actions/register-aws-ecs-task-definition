@@ -8,6 +8,7 @@ import ECS, {
 
 export interface TaskRegistrationInput {
   family?: string;
+  secrets?: object;
   template?: string;
   containerImages?: object;
   environmentVars?: object;
@@ -66,15 +67,34 @@ function overrideEnvironmentVars(
   }
 }
 
+function overrideSecrets(
+  definition: RegisterTaskDefinitionRequest,
+  secrets: object
+): void {
+  const { containerDefinitions } = definition;
+  if (!secrets || !containerDefinitions) return;
+
+  for (const [name, value] of Object.entries(secrets)) {
+    containerDefinitions.forEach((definition) => {
+      const { secrets } = definition;
+      if (!secrets) return;
+
+      let variableDefinition = secrets.find((def) => def.name == name);
+      if (variableDefinition) variableDefinition.valueFrom = value;
+    });
+  }
+}
+
 function processTaskDefinitionInput(
   input: TaskRegistrationInput
 ): RegisterTaskDefinitionRequest | undefined {
-  const { family, containerImages, environmentVars } = input;
+  const { family, containerImages, environmentVars, secrets } = input;
 
   let taskDefinition = readTaskDefinitionTemplate(input);
   if (!taskDefinition) return;
 
   if (family) taskDefinition.family = family;
+  if (secrets) overrideSecrets(taskDefinition, secrets);
   if (containerImages) overrideContainerImages(taskDefinition, containerImages);
   if (environmentVars) overrideEnvironmentVars(taskDefinition, environmentVars);
 

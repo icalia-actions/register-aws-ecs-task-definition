@@ -27,6 +27,7 @@ function run() {
         const { taskDefinitionArn } = yield task_definition_registration_1.registerTaskDefinition({
             family,
             template: core_1.getInput("template"),
+            secrets: JSON.parse(core_1.getInput("secrets") || "null"),
             containerImages: JSON.parse(core_1.getInput("container-images") || "null"),
             environmentVars: JSON.parse(core_1.getInput("environment-vars") || "null"),
         });
@@ -145,13 +146,30 @@ function overrideEnvironmentVars(definition, environmentVars) {
         });
     }
 }
+function overrideSecrets(definition, secrets) {
+    const { containerDefinitions } = definition;
+    if (!secrets || !containerDefinitions)
+        return;
+    for (const [name, value] of Object.entries(secrets)) {
+        containerDefinitions.forEach((definition) => {
+            const { secrets } = definition;
+            if (!secrets)
+                return;
+            let variableDefinition = secrets.find((def) => def.name == name);
+            if (variableDefinition)
+                variableDefinition.valueFrom = value;
+        });
+    }
+}
 function processTaskDefinitionInput(input) {
-    const { family, containerImages, environmentVars } = input;
+    const { family, containerImages, environmentVars, secrets } = input;
     let taskDefinition = readTaskDefinitionTemplate(input);
     if (!taskDefinition)
         return;
     if (family)
         taskDefinition.family = family;
+    if (secrets)
+        overrideSecrets(taskDefinition, secrets);
     if (containerImages)
         overrideContainerImages(taskDefinition, containerImages);
     if (environmentVars)
