@@ -30,5 +30,5 @@ Registers a Task Definition in AWS ECS
 ## Library Usage
 
 ```
-yarn add --dev @icalialabs/register-aws-ecs-task-definition
+yarn add --dev @icalialabs/register-aws-ecs-task-definition--
 ```
